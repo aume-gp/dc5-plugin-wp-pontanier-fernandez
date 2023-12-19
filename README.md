@@ -1,1 +1,1 @@
-# dc5-plugin-wp-pontanier-fernandez
+Plugin WP DC5C - Pontanier & Fernandez
