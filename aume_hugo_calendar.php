@@ -111,6 +111,7 @@ function obtenir_creneaux_reserves($date) {
     return $creneaux;
 }
 
+
 function display_form_shortcode() {
     ob_start();
     afficher_formulaire_reservation();
@@ -161,5 +162,21 @@ function envoyer_email_administration($user_id, $date, $heure) {
 
     wp_mail($admin_email, $subject, $message);
 }
+
+function charger_creneaux() {
+    $dateChoisie = $_POST['date'];
+    echo generer_options_heures($dateChoisie);
+    wp_die();
+}
+
+add_action('wp_ajax_charger_creneaux', 'charger_creneaux');
+add_action('wp_ajax_nopriv_charger_creneaux', 'charger_creneaux');
+
+function calendar_ajax_scripts() {
+    wp_enqueue_script('jquery');
+    wp_enqueue_script('calendar-ajax-scripts', plugin_dir_url(__FILE__) . 'script.js', array('jquery'), '1.0', true);
+    wp_localize_script('calendar-ajax-scripts', 'ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+}
+add_action('wp_enqueue_scripts', 'calendar_ajax_scripts');
 
 ?>
