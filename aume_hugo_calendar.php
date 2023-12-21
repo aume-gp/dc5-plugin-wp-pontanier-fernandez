@@ -111,4 +111,55 @@ function obtenir_creneaux_reserves($date) {
     return $creneaux;
 }
 
+function display_form_shortcode() {
+    ob_start();
+    afficher_formulaire_reservation();
+    return ob_get_clean();
+}
+
+add_shortcode('aume-hugo-calendar', 'display_form_shortcode');
+
+function traiter_reservation() {
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['date_reservation']) && isset($_POST['heure_reservation']) && is_user_logged_in()) {
+        $user_id = get_current_user_id();
+        $date = sanitize_text_field($_POST['date_reservation']);
+        $heure = sanitize_text_field($_POST['heure_reservation']);
+
+        enregistrer_reservation($user_id, $date, $heure);
+        envoyer_email_administration($user_id, $date, $heure);
+
+        wp_redirect(home_url());
+        exit;
+    }
+}
+
+add_action('init', 'traiter_reservation');
+
+function enregistrer_reservation($user_id, $date, $heure) {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'reservations';
+
+    $wpdb->insert(
+        $table_name,
+        array(
+            'user_id' => $user_id,
+            'date_reservation' => $date,
+            'heure_reservation' => $heure
+        )
+    );
+}
+
+function envoyer_email_administration($user_id, $date, $heure) {
+    $user_info = get_userdata($user_id);
+    $username = $user_info->user_login;
+
+    $admin_email = get_option('admin_email');
+    $subject = "Nouvelle Réservation";
+    $message = "Une nouvelle réservation a été faite par l'utilisateur :
+    $username pour le $date à $heure.
+    Vous pouvez consulter la liste des réservations ici : " . admin_url("admin.php?page=gestion-calendrier") . " ";
+
+    wp_mail($admin_email, $subject, $message);
+}
+
 ?>
